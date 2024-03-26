@@ -1,12 +1,41 @@
-name: Self-Hosted Runner Example
+name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  # Replace with your production branch
+      - dev   # Replace with your development branch
 
 jobs:
-  run-on-self-hosted:
+  build-and-push:
     runs-on: self-hosted
+
     steps:
-      - name: Echo on Self-Hosted Runner
-        run: echo "This job is running on a self-hosted runner!"
+    - uses: actions/checkout@v3
+
+    - name: Set up Docker
+      uses: docker-practice/actions-setup-docker@master
+
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+    - name: Build and Push Docker Image
+      env:
+        REPOSITORY: your-docker-hub-username/image-name
+        COMMIT_HASH: ${{ github.sha }}
+      run: |
+        # Build and tag the Docker image
+        docker build -t $REPOSITORY:$COMMIT_HASH .
+        
+        # Additional tagging
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          docker tag $REPOSITORY:$COMMIT_HASH $REPOSITORY:stable
+        elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+          docker tag $REPOSITORY:$COMMIT_HASH $REPOSITORY:dev
+        fi
+        
+        # Push the Docker image
+        docker push --all-tags $REPOSITORY
+
+    - name: Increase version in package.json
+      run: npm version patch -m "Increase version to %s"
