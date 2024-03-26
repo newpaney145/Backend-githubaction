@@ -16,17 +16,13 @@ jobs:
     # - name: Set up Docker
     #   uses: docker-practice/actions-setup-docker@master
 
-    - name: Set up Docker
-      uses: docker-practice/actions-setup-docker@master
-      with:
-          sudo: true
+    
 
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
     - name: Build and Push Docker Image
       env:
-        REPOSITORY: your-docker-hub-username/image-name
         COMMIT_HASH: ${{ github.sha }}
       run: |
         # Build and tag the Docker image
