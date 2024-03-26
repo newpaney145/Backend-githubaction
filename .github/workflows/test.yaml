@@ -24,6 +24,7 @@ jobs:
     - name: Build and Push Docker Image
       env:
         COMMIT_HASH: ${{ github.sha }}
+        REPOSITORY: sagar145/backend 
       run: |
         # Build and tag the Docker image
         docker build -t $REPOSITORY:$COMMIT_HASH .
